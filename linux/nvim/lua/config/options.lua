@@ -1,3 +1,10 @@
+-- tab options
+vim.cmd("set expandtab")
+vim.cmd("set tabstop=4")
+vim.cmd("set softtabstop=4")
+vim.cmd("set shiftwidth=4")
+vim.cmd("set autoindent")
+
 -- set highlight on search
 vim.o.hlsearch = true
 
@@ -16,6 +23,5 @@ vim.o.smartcase = true
 vim.opt.clipboard = "unnamedplus"
 
 -- set leader key
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
-
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
