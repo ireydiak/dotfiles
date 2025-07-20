@@ -1,10 +1,20 @@
+-- Fuzzy finder for files, buffers, grep, and more
 return {
-    'nvim-telescope/telescope.nvim',
-    tag = '0.1.8',
-    dependencies = { "nvim-lua/plenary.nvim" },
-    config = function()
-        local builtin = require("telescope.builtin")
-        vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Telescope find files' })
-        vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = 'Telescope live grep' })
-    end,
+	{
+		"nvim-telescope/telescope.nvim",
+		tag = "0.1.8",
+		dependencies = { "nvim-lua/plenary.nvim" },
+	},
+
+	{
+		"nvim-telescope/telescope-fzf-native.nvim",
+		run = "make",
+	},
+
+	-- Neovim plugin for splitting/joining blocks of code like arrays, hashes, statements, objects, dictionaries, etc.
+	{
+		"Wansmer/treesj",
+		keys = { "<space>m", "<space>j", "<space>s" },
+		dependencies = { "nvim-treesitter/nvim-treesitter" },
+	},
 }

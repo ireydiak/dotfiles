@@ -1,4 +1,4 @@
--- use fzf in telescope
+m-- use fzf in telescope
 require("telescope").load_extension("fzf")
 
 -- displays which-key gui
