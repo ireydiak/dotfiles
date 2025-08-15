@@ -1,0 +1,28 @@
+
+# Switch spaces (similar to Super+1-5 in i3)
+#cmd - 1 : yabai -m space --focus 1
+#cmd - 2 : yabai -m space --focus 2
+#cmd - 3 : yabai -m space --focus 3
+#cmd - 4 : yabai -m space --focus 4
+#cmd - 5 : yabai -m space --focus 5
+
+# Move windows to spaces (like Super+Shift+1-5)
+# cmd + shift - 1 : yabai -m window --space 1
+# cmd + shift - 2 : yabai -m window --space 2
+# ... etc
+
+# Terminal shortcut (like Super+Return)
+#cmd - return : open -a "Ghostty"
+alt - c : open -a 'Webstorm'
+alt - t : open -a 'Ghostty'
+alt - b : open -a 'Google Chrome'
+
+# focus windnow
+alt - j : yabai -m window --focust south
+alt - k : yabai -m window --focust north
+alt - h : yabai -m window --focust west
+alt - l : yabai -m window --focust east
+
+# Move windows to spaces (like Super+Shift+1-5)
+cmd + shift - 1 : yabai -m window --space 1
+cmd + shift - 2 : yabai -m window --space 2
