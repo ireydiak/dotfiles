@@ -45,12 +45,33 @@ map("n", "<leader>co", ":copen<CR>", { desc = "Open quickfix" })
 
 -- clipboard magic
 -- Paste over selection without losing clipboard content
-map("x", "<leader>p", [["_dP]])
-map({ "n", "v" }, "<leader>y", [["+y]]) -- Copy to system clipboard
+map("x", "p", [["_dP]])
+--map({ "n", "v" }, "<leader>y", [["+y]]) -- Copy to system clipboard
 map({ "n", "v" }, "<leader>d", [["_d]])
+
+vim.api.nvim_set_keymap('n', 'dd', '"_dd', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'dw', '"_dw', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'D', '"_D', { noremap = true, silent = true })
 
 -- search and replace
 vim.keymap.set("n", "<leader>sr", function()
   local word = vim.fn.expand("<cword>")
   vim.api.nvim_feedkeys(":%s/" .. word .. "//gI", "n", false)
 end, { desc = "Substitute word under cursor" })
+
+
+-- Telescope marks
+-- used to be <leader>'
+vim.keymap.set("n", "<leader>fm", "<cmd>Telescope marks<cr>", { desc = "Find marks (Telescope)" })
+vim.keymap.set(
+    "n",
+    "<leader>d'",
+    function ()
+        if vim.fn.confirm("Delete all marks?", "&Yes/&No") == 1 then
+        vim.cmd("delmarks!")
+        print("All marks have been deleted.")
+        end
+    end,
+    { desc = "Delete marks" }
+)
+

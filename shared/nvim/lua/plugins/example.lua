@@ -53,27 +53,15 @@ return {
       },
     },
     -- change some options
-    opts = {
-      defaults = {
-        layout_strategy = "horizontal",
-        layout_config = { prompt_position = "top" },
-        sorting_strategy = "ascending",
-        winblend = 0,
+      opts = {
+        defaults = {
+          layout_strategy = "horizontal",
+          layout_config = { prompt_position = "top" },
+          sorting_strategy = "ascending",
+          winblend = 0,
+          find_command = { "rg", "--files", "--no-ignore-vcs", "--hidden" },
+        },
       },
-    },
-  },
-
-  -- add pyright to lspconfig
-  {
-    "neovim/nvim-lspconfig",
-    ---@class PluginLspOpts
-    opts = {
-      ---@type lspconfig.options
-      servers = {
-        -- pyright will be automatically installed with mason and loaded with lspconfig
-        pyright = {},
-      },
-    },
   },
 
   -- add tsserver and setup with typescript.nvim instead of lspconfig
@@ -195,3 +183,4 @@ return {
     },
   },
 }
+

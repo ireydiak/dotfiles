@@ -59,8 +59,43 @@ opt.termguicolors = true
 -- navigation
 opt.whichwrap:append("<>[]hl")
 
+-- stop adding newline at the end of files
+-- opt.fixeol = false
+
 -- mason integration
 local is_windows = vim.fn.has("win32") ~= 0
 local sep = is_windows and "\\" or "/"
 local delim = is_windows and ";" or ":"
 vim.env.PATH = table.concat({ vim.fn.stdpath("data"), "mason", "bin" }, sep) .. delim .. vim.env.PATH
+
+vim.g.autoformat = false
+
+-- fix terraform and hcl comment string
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("FixTerraformCommentString", { clear = true }),
+  callback = function(ev)
+    vim.bo[ev.buf].commentstring = "# %s"
+  end,
+  pattern = { "terraform", "hcl", "tf" },
+})
+
+-- fix vuejs, typescript and js comment string
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("FixJSCommentString", { clear = true }),
+  callback = function(ev)
+    vim.bo[ev.buf].commentstring = "// %s"
+  end,
+  pattern = { "vue", "ts", "js" },
+})
+
+-- enables buffer reload when changed from external sources (e.g. a code formatter)
+vim.opt.autoread = true
+
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter" }, {
+  callback = function()
+    if vim.o.modifiable and vim.bo.autoread then
+      vim.cmd("checktime")
+    end
+  end,
+})
+
