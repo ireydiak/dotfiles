@@ -1,18 +1,12 @@
 #!/bin/bash
 
 brew install awscli \
-    docker \
     fzf \
     go \
     jq \
     ripgrep \
+    rust \
+    sesh \
     tmux \
+    zig \
     zoxide
-
-if [[ ! -d "/Applications/Google Chrome.app" ]]; then
-	brew install --cask google-chrome
-fi
-
-if [[ ! -d "/Applications/JetBrains Toolbox.app" ]]; then
-	brew install --cask jetbrains-toolbox
-fi
