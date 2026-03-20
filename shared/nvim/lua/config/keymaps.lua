@@ -44,17 +44,19 @@ map("n", "[p", ":cprev<CR>", { desc = "Previous quickfix" })
 map("n", "<leader>co", ":copen<CR>", { desc = "Open quickfix" })
 
 -- clipboard magic
--- Paste over selection without losing clipboard content
+map({'n', 'v'}, 'd', '"_d')
+map({'n', 'v'}, 'D', '"_D')
+map({'n', 'v'}, 'c', '"_c')
+map({'n', 'v'}, 'C', '"_C')
+map('v', 'p', '"_dP')
 map("x", "p", [["_dP]])
---map({ "n", "v" }, "<leader>y", [["+y]]) -- Copy to system clipboard
-map({ "n", "v" }, "<leader>d", [["_d]])
 
 vim.api.nvim_set_keymap('n', 'dd', '"_dd', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'dw', '"_dw', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'D', '"_D', { noremap = true, silent = true })
 
 -- search and replace
-vim.keymap.set("n", "<leader>sr", function()
+map("n", "<leader>sr", function()
   local word = vim.fn.expand("<cword>")
   vim.api.nvim_feedkeys(":%s/" .. word .. "//gI", "n", false)
 end, { desc = "Substitute word under cursor" })
@@ -62,8 +64,8 @@ end, { desc = "Substitute word under cursor" })
 
 -- Telescope marks
 -- used to be <leader>'
-vim.keymap.set("n", "<leader>fm", "<cmd>Telescope marks<cr>", { desc = "Find marks (Telescope)" })
-vim.keymap.set(
+map("n", "<leader>fm", "<cmd>Telescope marks<cr>", { desc = "Find marks (Telescope)" })
+map(
     "n",
     "<leader>d'",
     function ()

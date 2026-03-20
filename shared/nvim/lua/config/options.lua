@@ -99,3 +99,8 @@ vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter" }, {
   end,
 })
 
+-- reduce i/o load
+vim.opt.swapfile = false
+vim.opt.backup = false
+vim.opt.undofile = false -- Optional, but helps if CPU is a concern
+
