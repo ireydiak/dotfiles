@@ -10,7 +10,6 @@ cmd + shift - 1 : yabai -m window --space 1
 cmd + shift - 2 : yabai -m window --space 2
 
 # Terminal shortcut (like Super+Return)
-alt - c : open -a 'Webstorm'
 alt - t : open -a 'Ghostty'
 alt - b : open -a 'Google Chrome'
 
