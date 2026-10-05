@@ -53,7 +53,9 @@ dotfiles/
     services/                   launchd status and start
     manual/                     manual checklist with optional detection
     exec/                       command runner interface (real and fake)
+    result/                     shared ok / skipped / failed result type and summary printing
     status/                     aggregates all of the above into one report
+    app/                        wires the packages together; the CLI and TUI both call it
     tui/                        Bubble Tea dashboard and export checklist
   home/                         mirrors $HOME; every entry here is linked
     .zshrc
@@ -196,8 +198,10 @@ The export diff compares the dump against the committed Brewfile:
   unchecked, so the Brewfile does not lose entries unless chosen.
 
 The new Brewfile is written as the dump's lines filtered to
-`(committed ∪ chosen-added) − chosen-removed`, which keeps Homebrew's canonical
-ordering and makes diffs stable. `brew bundle cleanup` is never run
+`committed ∪ chosen-added`, in dump order, followed by the committed entries
+that are no longer installed and were not chosen for removal, in their
+committed order. This keeps Homebrew's canonical ordering for everything
+installed and makes diffs stable. `brew bundle cleanup` is never run
 automatically.
 
 ## 6. Commands
@@ -209,7 +213,7 @@ only). Exit code is 0 when every requested action succeeded or was a no-op,
 
 | Command | Behavior |
 |---|---|
-| `dot status` | Prints one report: Brewfile entries not installed (`brew bundle check --verbose`) and installed packages not in the Brewfile (a temporary dump diffed as in section 5, with no trust prompt, so untrusted-tap packages stay invisible until the first export); each link's state; each service loaded or not; each manual step done, pending or unverifiable; whether the repo has uncommitted changes. Never modifies anything. |
+| `dot status` | Prints one report: Brewfile entries not installed and installed packages not in the Brewfile, both from a temporary dump diffed against the committed Brewfile as in section 5 (no trust prompt, so untrusted-tap packages stay invisible until the first export; `brew bundle check` is not used because it also reports outdated packages); each link's state; each service loaded or not; each manual step done, pending or unverifiable; whether the repo has uncommitted changes. Never modifies anything. |
 | `dot install` | In order: trust taps, `brew bundle install --file=Brewfile`, link everything, run each step whose check fails, start services that are not loaded. Continues past failures, prints a summary, exits 1 if any failed. Idempotent. Finishes by printing pending manual steps. |
 | `dot link` | Applies the link plan only (see section 8). |
 | `dot export` | Tap-trust prompt, dump, diff, picker (TUI) or print-and-confirm (CLI with `--yes` accepting the defaults), write Brewfile. |
@@ -394,16 +398,19 @@ Acceptance on this machine after migration:
 Performed as the last implementation task, with a timestamped backup of every
 touched live path.
 
-1. Trust the currently tapped taps, run the first `dot export`, add
-   `cask "font-jetbrains-mono-nerd-font"` and `cask "font-sketchybar-app-font"`,
-   commit the Brewfile.
-2. Move live configs into `home/` (live versions win over repo copies):
+1. Move live configs into `home/` (live versions win over repo copies):
    `~/.zshrc`, `~/.zprofile`, `~/.gitconfig`, `~/.config/{git,tmux,nvim,skhd,yabai,sketchybar}`,
    the Ghostty config, the lazygit `config.yml`. Track `lazy-lock.json` and
    `lazyvim.json` for reproducible plugin versions. Delete the vendored
-   `sketchybar-app-font/` directory and gitignore `helper/helper`.
-3. Split `.zshrc`: move the credential exports to `~/.zshrc.local`, append the
-   source lines from section 10 to the tracked file.
+   `sketchybar-app-font/` directory and gitignore `helper/helper`. This comes
+   first because the manifest only validates once every link source exists,
+   and `dot export` cannot run before the manifest loads.
+2. Split `.zshrc`: move the credential exports to `~/.zshrc.local`, append the
+   source lines from section 10 to the tracked file. Commit `home/` and the
+   manifest only after confirming no credential is staged.
+3. Trust the currently tapped taps, run the first `dot export`, add
+   `cask "font-jetbrains-mono-nerd-font"` and `cask "font-sketchybar-app-font"`,
+   commit the Brewfile.
 4. Remove the duplicate `~/.sketchybarrc` (sketchybar reads
    `~/.config/sketchybar/sketchybarrc` first) and the redundant
    `~/.tmux.conf` symlink, since tmux 3.1+ reads `~/.config/tmux/tmux.conf`
