@@ -95,10 +95,12 @@ home directory; nothing else is expanded.
 "Library/Application Support/lazygit/config.yml"           = "~/Library/Application Support/lazygit/config.yml"
 
 # non-brew installs; run in file order; `run` only executes when `check` exits non-zero
+# `update` is optional and is only used by `dot update`
 [[steps]]
-id    = "oh-my-zsh"
-check = "test -d ~/.oh-my-zsh"
-run   = "sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" '' --unattended --keep-zshrc"
+id     = "oh-my-zsh"
+check  = "test -d ~/.oh-my-zsh"
+run    = "sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" '' --unattended --keep-zshrc"
+update = "ZSH=~/.oh-my-zsh zsh ~/.oh-my-zsh/tools/upgrade.sh"
 
 [[steps]]
 id    = "nvm"
@@ -111,9 +113,10 @@ check = "test -x ~/.config/sketchybar/helper/helper"
 run   = "make -C ~/.config/sketchybar/helper"
 
 [[steps]]
-id    = "nvim-plugins"
-check = "test -d ~/.local/share/nvim/lazy/lazy.nvim"
-run   = "nvim --headless '+Lazy! restore' +qa"
+id     = "nvim-plugins"
+check  = "test -d ~/.local/share/nvim/lazy/lazy.nvim"
+run    = "nvim --headless '+Lazy! restore' +qa"
+update = "nvim --headless '+Lazy! sync' +qa"
 
 # launchd agents; status is `launchctl print gui/<uid>/<label>` exit code
 [[services]]
@@ -160,7 +163,8 @@ Validation rules, enforced on load:
 
 - Every `[links]` key must exist under `home/`. Every value must start with `~/`.
 - `id` values are unique within their section. `check` and `run`/`start`/`how`
-  are non-empty strings.
+  are non-empty strings. `update` on a step is optional; when present it is a
+  non-empty string.
 - Unknown keys are an error, so typos surface immediately.
 
 Packages are intentionally not in the manifest. The `Brewfile` is Homebrew's
@@ -209,6 +213,7 @@ only). Exit code is 0 when every requested action succeeded or was a no-op,
 | `dot install` | In order: trust taps, `brew bundle install --file=Brewfile`, link everything, run each step whose check fails, start services that are not loaded. Continues past failures, prints a summary, exits 1 if any failed. Idempotent. Finishes by printing pending manual steps. |
 | `dot link` | Applies the link plan only (see section 8). |
 | `dot export` | Tap-trust prompt, dump, diff, picker (TUI) or print-and-confirm (CLI with `--yes` accepting the defaults), write Brewfile. |
+| `dot update` | In order: `brew update`, `brew upgrade` (formulae and casks that are not self-updating), then the `update` command of every step that defines one, in manifest order. Installs nothing new and never runs `brew bundle cleanup`. Continues past failures, prints a summary, exits 1 if any failed. Ends by noting whether the repo now has uncommitted changes, since `Lazy! sync` rewrites `lazy-lock.json`. |
 | `dot commit [-m msg] [--no-push]` | `git add -A`, commit with the given or a generated message, push if a remote exists and `--no-push` is absent. Generated message example: `dot: update .config/nvim, .config/tmux; Brewfile +3 -1`. |
 | `dot` | The TUI dashboard (section 7). |
 
@@ -236,6 +241,7 @@ disables other keys until it finishes; the dashboard refreshes afterwards.
 | `i` | install |
 | `l` | link |
 | `e` | export (opens the picker) |
+| `u` | update |
 | `c` | commit and push |
 | `r` | refresh status |
 | `q` | quit |
@@ -278,6 +284,10 @@ and `HOME` set. `check` is run first; exit 0 means skip. Otherwise `run`
 executes with output streamed, then `check` runs again. If it still fails the
 step is marked failed. Steps run in manifest order so later steps can depend on
 earlier ones.
+
+A step's optional `update` command runs only from `dot update`, through the
+same shell and environment, without consulting `check`. A non-zero exit marks
+that step's update failed. Steps without `update` are skipped silently.
 
 **Services** are loaded when `launchctl print gui/<uid>/<label>` exits 0.
 `install` runs `start` only for services not loaded. `status` reports loaded or
@@ -332,8 +342,8 @@ curl -fsSL https://raw.githubusercontent.com/ireydiak/dotfiles/main/bootstrap.sh
 6. Print the pending manual checklist and remind to open a new shell.
 
 `~/.local/bin` is already on `PATH` in the tracked `.zprofile`/`.zshrc`.
-Rebuilding after pulling changes is `go build` again; a `dot upgrade` command is
-out of scope for this version.
+Rebuilding `dot` itself after pulling repo changes is `go build` again;
+`dot update` upgrades the managed software, not the `dot` binary or the repo.
 
 ## 12. Error handling
 
@@ -346,8 +356,9 @@ out of scope for this version.
 - Writes to the Brewfile and to symlink targets are atomic where the filesystem
   allows: write to a temp file then rename; create the new symlink under a temp
   name then rename over the old one.
-- `--dry-run` applies to install, link, export and commit and prints the full
-  plan with no side effects, including no tap trust and no git commands.
+- `--dry-run` applies to install, link, export, update and commit and prints
+  the full plan with no side effects, including no tap trust, no brew upgrade
+  and no git commands.
 
 ## 13. Testing
 
@@ -361,7 +372,10 @@ Unit tests, standard `go test`, using `t.TempDir()` as `$HOME` and as the repo:
   added and removed sets; filtered write preserves dump order; tap trust list
   is computed from the Brewfile.
 - `steps`: check passes so run is skipped; check fails, run succeeds, recheck
-  passes; recheck still failing marks failed; order is preserved.
+  passes; recheck still failing marks failed; order is preserved; update runs
+  only for steps that define it and ignores check.
+- `update`: brew update and upgrade are invoked in order before any step
+  update; a failing brew upgrade does not stop step updates.
 - `services` and `manual`: status derived from scripted exit codes.
 - `status`: aggregation and the `--json` shape.
 - `tui`: model update logic for key handling and picker toggling, driven
@@ -407,5 +421,7 @@ owner to decide; not part of this work.
 - Theme switching (`dot theme`).
 - Pinning Homebrew package versions. Only nvim plugins are pinned, via `lazy-lock.json`.
 - `brew bundle cleanup` or any uninstall.
-- A `dot upgrade` command or prebuilt release binaries.
+- Self-update of the repo and the `dot` binary (`git pull` plus rebuild), and
+  prebuilt release binaries.
+- `brew upgrade --greedy` for self-updating casks; plain `brew upgrade` only.
 - Managing `~/.zshrc.local` or any secret store.
