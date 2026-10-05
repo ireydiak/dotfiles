@@ -14,6 +14,7 @@ import (
 	"github.com/ireydiak/dotfiles/internal/link"
 	"github.com/ireydiak/dotfiles/internal/manual"
 	"github.com/ireydiak/dotfiles/internal/result"
+	"github.com/ireydiak/dotfiles/internal/services"
 	"github.com/ireydiak/dotfiles/internal/status"
 )
 
@@ -192,7 +193,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	key := k.String()
-	if key == "ctrl+c" || (key == "q" && m.screen == screenDashboard) {
+	if key == "ctrl+c" || (key == "q" && m.screen == screenDashboard && !m.running) {
 		return m, tea.Quit
 	}
 	switch m.screen {
@@ -332,9 +333,13 @@ func (m Model) writeReport(b *strings.Builder) {
 
 	b.WriteString(sectionStyle.Render("Services") + "\n")
 	for _, s := range r.Services {
-		st := okStyle.Render(fmt.Sprintf("%-13s", "loaded"))
-		if !s.Loaded {
-			st = badStyle.Render(fmt.Sprintf("%-13s", "not loaded"))
+		label := fmt.Sprintf("%-13s", services.Describe(s))
+		st := okStyle.Render(label)
+		switch {
+		case !s.Loaded:
+			st = badStyle.Render(label)
+		case !s.Running:
+			st = warnStyle.Render(label)
 		}
 		b.WriteString("  " + st + " " + s.ID + "\n")
 	}

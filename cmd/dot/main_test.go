@@ -122,14 +122,40 @@ func TestExportDeclinedWritesNothing(t *testing.T) {
 func TestCommitFlags(t *testing.T) {
 	f := exec.NewFake()
 	newApp, root := testApp(t, f)
-	f.Scripts["git -C "+root+" status --porcelain"] = exec.Result{Stdout: " M home/.zshrc\n"}
+	f.Scripts["git -C "+exec.Quote(root)+" status --porcelain"] = exec.Result{Stdout: " M home/.zshrc\n"}
 	var out bytes.Buffer
 	code := run([]string{"commit", "-m", "hello", "--no-push"}, strings.NewReader(""), &out, &bytes.Buffer{}, newApp)
 	if code != 0 {
 		t.Fatalf("code=%d out=%s", code, out.String())
 	}
 	calls := strings.Join(f.Calls, "|")
-	if !strings.Contains(calls, "commit -m 'hello'") || strings.Contains(calls, "git -C "+root+" push") {
+	if !strings.Contains(calls, "commit -m 'hello'") || strings.Contains(calls, "git -C "+exec.Quote(root)+" push") {
 		t.Fatalf("calls = %v", f.Calls)
+	}
+}
+
+func TestHelpFlagExits0(t *testing.T) {
+	for _, args := range [][]string{{"--help"}, {"-h"}, {"status", "-h"}, {"help"}} {
+		var out, errOut bytes.Buffer
+		if code := run(args, strings.NewReader(""), &out, &errOut, nil); code != 0 || !strings.Contains(out.String(), "usage: dot") || errOut.Len() != 0 {
+			t.Fatalf("%v: code=%d stdout=%q stderr=%q (stderr must be empty)", args, code, out.String(), errOut.String())
+		}
+	}
+}
+
+func TestExtraArgumentsExit2(t *testing.T) {
+	for _, args := range [][]string{{"status", "extra"}, {"--dry-run", "install"}} {
+		var out, errOut bytes.Buffer
+		if code := run(args, strings.NewReader(""), &out, &errOut, nil); code != 2 || !strings.Contains(errOut.String(), "unexpected argument") {
+			t.Fatalf("%v: code=%d stderr=%q", args, code, errOut.String())
+		}
+	}
+}
+
+func TestUnknownFlagExits2WithUsage(t *testing.T) {
+	var out, errOut bytes.Buffer
+	code := run([]string{"status", "--bogus"}, strings.NewReader(""), &out, &errOut, nil)
+	if code != 2 || !strings.Contains(errOut.String(), "not defined") || !strings.Contains(errOut.String(), "usage: dot") {
+		t.Fatalf("code=%d stderr=%q", code, errOut.String())
 	}
 }

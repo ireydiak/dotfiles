@@ -61,7 +61,7 @@ func Resolve(o ResolveOptions) (string, error) {
 // GitTop returns a function that finds the git top level of a directory.
 func GitTop(ctx context.Context, r exec.Runner) func(dir string) (string, error) {
 	return func(dir string) (string, error) {
-		res, err := r.Run(ctx, "git -C "+dir+" rev-parse --show-toplevel", nil)
+		res, err := r.Run(ctx, "git -C "+exec.Quote(dir)+" rev-parse --show-toplevel", nil)
 		if err != nil {
 			return "", err
 		}
@@ -72,17 +72,13 @@ func GitTop(ctx context.Context, r exec.Runner) func(dir string) (string, error)
 	}
 }
 
-func ShellQuote(s string) string {
-	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
-}
-
 type Git struct {
 	Root string
 	R    exec.Runner
 }
 
 func (g Git) run(ctx context.Context, args string, out io.Writer) (exec.Result, error) {
-	cmd := "git -C " + g.Root + " " + args
+	cmd := "git -C " + exec.Quote(g.Root) + " " + args
 	res, err := g.R.Run(ctx, cmd, out)
 	if err != nil {
 		return res, fmt.Errorf("%s: %w", cmd, err)
@@ -137,7 +133,7 @@ func (g Git) BrewfileNumstat(ctx context.Context) (int, int, error) {
 }
 
 func (g Git) CommitAll(ctx context.Context, msg string, out io.Writer) error {
-	_, err := g.run(ctx, "add -A && git -C "+g.Root+" commit -m "+ShellQuote(msg), out)
+	_, err := g.run(ctx, "add -A && git -C "+exec.Quote(g.Root)+" commit -m "+exec.Quote(msg), out)
 	return err
 }
 

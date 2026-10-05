@@ -64,8 +64,8 @@ func TestResolveMakesFlagAbsolute(t *testing.T) {
 func TestGitChangesAndMessage(t *testing.T) {
 	f := exec.NewFake()
 	g := Git{Root: "/r", R: f}
-	f.Scripts["git -C /r status --porcelain"] = exec.Result{Stdout: " M home/.config/nvim/lua/plugins/lsp.lua\n M home/.config/tmux/tmux.conf\n?? home/.zshrc\nM  Brewfile\nR  old.md -> manifest.toml\n"}
-	f.Scripts["git -C /r diff --numstat HEAD -- Brewfile"] = exec.Result{Stdout: "3\t1\tBrewfile\n"}
+	f.Scripts["git -C '/r' status --porcelain"] = exec.Result{Stdout: " M home/.config/nvim/lua/plugins/lsp.lua\n M home/.config/tmux/tmux.conf\n?? home/.zshrc\nM  Brewfile\nR  old.md -> manifest.toml\n"}
+	f.Scripts["git -C '/r' diff --numstat HEAD -- Brewfile"] = exec.Result{Stdout: "3\t1\tBrewfile\n"}
 	changes, err := g.Changes(context.Background())
 	if err != nil || len(changes) != 5 || changes[4] != "manifest.toml" {
 		t.Fatalf("changes = %v %v", changes, err)
@@ -89,7 +89,7 @@ func TestGitChangesAndMessage(t *testing.T) {
 func TestGitCommitPushAndRemote(t *testing.T) {
 	f := exec.NewFake()
 	g := Git{Root: "/r", R: f}
-	f.Scripts["git -C /r remote"] = exec.Result{Stdout: "origin\n"}
+	f.Scripts["git -C '/r' remote"] = exec.Result{Stdout: "origin\n"}
 	if has, _ := g.HasRemote(context.Background()); !has {
 		t.Fatal("expected remote")
 	}
@@ -99,8 +99,8 @@ func TestGitCommitPushAndRemote(t *testing.T) {
 	if err := g.Push(context.Background(), nil); err != nil {
 		t.Fatal(err)
 	}
-	want := `git -C /r add -A && git -C /r commit -m 'it'\''s done'`
-	if f.Calls[1] != want || f.Calls[2] != "git -C /r push" {
+	want := `git -C '/r' add -A && git -C '/r' commit -m 'it'\''s done'`
+	if f.Calls[1] != want || f.Calls[2] != "git -C '/r' push" {
 		t.Fatalf("calls = %q", f.Calls)
 	}
 	f.Scripts[want] = exec.Result{ExitCode: 1, Stderr: "nothing added\n"}
@@ -111,7 +111,7 @@ func TestGitCommitPushAndRemote(t *testing.T) {
 
 func TestGitTop(t *testing.T) {
 	f := exec.NewFake()
-	f.Scripts["git -C /some/dir rev-parse --show-toplevel"] = exec.Result{Stdout: "/some\n"}
+	f.Scripts["git -C '/some/dir' rev-parse --show-toplevel"] = exec.Result{Stdout: "/some\n"}
 	top, err := GitTop(context.Background(), f)("/some/dir")
 	if err != nil || top != "/some" {
 		t.Fatalf("GitTop = %q %v", top, err)
@@ -119,5 +119,15 @@ func TestGitTop(t *testing.T) {
 	f.Default = exec.Result{ExitCode: 128}
 	if _, err := GitTop(context.Background(), f)("/elsewhere"); err == nil {
 		t.Fatal("non-repo must error")
+	}
+}
+
+func TestGitQuotesRoot(t *testing.T) {
+	f := exec.NewFake()
+	g := Git{Root: "/my repo", R: f}
+	g.Push(context.Background(), nil)
+	GitTop(context.Background(), f)("/some dir")
+	if f.Calls[0] != "git -C '/my repo' push" || f.Calls[1] != "git -C '/some dir' rev-parse --show-toplevel" {
+		t.Fatalf("calls = %q", f.Calls)
 	}
 }

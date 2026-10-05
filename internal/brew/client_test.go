@@ -37,7 +37,7 @@ func TestCommittedParsesFile(t *testing.T) {
 
 func TestDumpRunsBrewAndParsesTempFile(t *testing.T) {
 	c, f := newClient(t)
-	cmd := "brew bundle dump --force --file=" + c.DumpPath()
+	cmd := "brew bundle dump --force --file=" + exec.Quote(c.DumpPath())
 	os.WriteFile(c.DumpPath(), []byte("tap \"a/b\"\nbrew \"jq\"\n"), 0o644)
 	f.Scripts[cmd] = exec.Result{}
 	entries, err := c.Dump(context.Background())
@@ -88,11 +88,21 @@ func TestCommandStrings(t *testing.T) {
 	c.Upgrade(ctx, &out)
 	want := []string{
 		"brew trust --tap x/y",
-		"brew bundle install --no-upgrade --file=" + c.File,
+		"brew bundle install --no-upgrade --file=" + exec.Quote(c.File),
 		"brew update",
 		"brew upgrade",
 	}
 	if strings.Join(f.Calls, "|") != strings.Join(want, "|") {
 		t.Fatalf("calls = %v", f.Calls)
+	}
+}
+
+func TestPathsWithSpacesAreQuoted(t *testing.T) {
+	f := exec.NewFake()
+	c := Client{R: f, File: "/tmp/my files/Brewfile", TempDir: "/tmp/my files"}
+	c.Install(context.Background(), nil)
+	c.Dump(context.Background())
+	if f.Calls[0] != "brew bundle install --no-upgrade --file='/tmp/my files/Brewfile'" || f.Calls[1] != "brew bundle dump --force --file='/tmp/my files/Brewfile.dump'" {
+		t.Fatalf("calls = %q", f.Calls)
 	}
 }

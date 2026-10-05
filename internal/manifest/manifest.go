@@ -15,9 +15,17 @@ import (
 
 type Manifest struct {
 	Links    map[string]string `toml:"links"`
+	Brew     BrewOptions       `toml:"brew"`
 	Steps    []Step            `toml:"steps"`
 	Services []Service         `toml:"services"`
 	Manual   []Manual          `toml:"manual"`
+}
+
+// BrewOptions tunes how dot treats brew bundle output.
+type BrewOptions struct {
+	// Ignore lists "<kind> <name>" entries that brew bundle dump reports but
+	// that must never reach the Brewfile, status or export (local-only builds).
+	Ignore []string `toml:"ignore"`
 }
 
 type Step struct {
@@ -101,6 +109,12 @@ func (m *Manifest) Validate(repoRoot string) error {
 		}
 		if val := m.Links[key]; !strings.HasPrefix(val, "~/") || len(val) < 3 {
 			errs = append(errs, fmt.Errorf("links: target for %q must start with ~/", key))
+		}
+	}
+
+	for _, ig := range m.Brew.Ignore {
+		if len(strings.Fields(ig)) != 2 {
+			errs = append(errs, fmt.Errorf("brew.ignore: %q must be '<kind> <name>' as in the Brewfile", ig))
 		}
 	}
 

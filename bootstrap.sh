@@ -12,7 +12,7 @@ if ! xcode-select -p >/dev/null 2>&1; then
 fi
 
 if [ ! -x /opt/homebrew/bin/brew ]; then
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/tty
 fi
 eval "$(/opt/homebrew/bin/brew shellenv)"
 

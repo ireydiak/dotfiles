@@ -3,11 +3,13 @@ package exec
 import (
 	"context"
 	"io"
+	"sync"
 )
 
 // Fake is a Runner for tests. Queue entries for a command are consumed first,
 // in order; then Scripts; then Default. Every command is recorded in Calls.
 type Fake struct {
+	mu      sync.Mutex
 	Scripts map[string]Result
 	Queue   map[string][]Result
 	Default Result
@@ -19,6 +21,8 @@ func NewFake() *Fake {
 }
 
 func (f *Fake) Run(_ context.Context, command string, out io.Writer) (Result, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	f.Calls = append(f.Calls, command)
 	var res Result
 	switch {

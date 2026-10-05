@@ -118,3 +118,14 @@ func TestExpand(t *testing.T) {
 		t.Fatalf("Expand should leave non-tilde paths alone, got %q", got)
 	}
 }
+
+func TestBrewIgnore(t *testing.T) {
+	m, err := Parse(strings.NewReader("[brew]\nignore = [\"go tcurl/cmd/tcurl\", \"npm yarn\"]\n"))
+	if err != nil || len(m.Brew.Ignore) != 2 || m.Brew.Ignore[0] != "go tcurl/cmd/tcurl" {
+		t.Fatalf("Brew.Ignore = %v %v", m, err)
+	}
+	root := writeRepo(t, "[brew]\nignore = [\"tcurl\"]\n")
+	if _, err := Load(root); err == nil || !strings.Contains(err.Error(), "<kind> <name>") {
+		t.Fatalf("ignore entries must be '<kind> <name>', got %v", err)
+	}
+}

@@ -60,6 +60,9 @@ func Collect(d Deps) Report {
 	if err != nil {
 		r.Repo.Err = err.Error()
 	}
+	if changes == nil {
+		changes = []string{}
+	}
 	r.Repo.Changes = changes
 	r.Repo.Dirty = len(changes) > 0
 	return r
@@ -74,8 +77,16 @@ func collectPackages(d Deps) Packages {
 	if err != nil {
 		return Packages{Err: err.Error()}
 	}
+	dump = brew.Exclude(dump, d.Manifest.Brew.Ignore)
 	diff := brew.Compare(committed, dump)
-	return Packages{Missing: diff.Removed, Unrecorded: diff.Added}
+	p := Packages{Missing: diff.Removed, Unrecorded: diff.Added}
+	if p.Missing == nil {
+		p.Missing = []brew.Entry{}
+	}
+	if p.Unrecorded == nil {
+		p.Unrecorded = []brew.Entry{}
+	}
+	return p
 }
 
 func (r Report) JSON(w io.Writer) error {
@@ -110,11 +121,7 @@ func (r Report) Print(w io.Writer) {
 
 	fmt.Fprintln(w, "Services")
 	for _, s := range r.Services {
-		state := "not loaded"
-		if s.Loaded {
-			state = "loaded"
-		}
-		fmt.Fprintf(w, "  %-13s %s\n", state, s.ID)
+		fmt.Fprintf(w, "  %-13s %s\n", services.Describe(s), s.ID)
 	}
 
 	fmt.Fprintln(w, "Manual")

@@ -184,9 +184,9 @@ func TestCommitCleanTreeIsSkipped(t *testing.T) {
 
 func TestCommitGeneratesMessageAndPushes(t *testing.T) {
 	h := newHarness(t, "")
-	h.fake.Scripts["git -C "+h.root+" status --porcelain"] = exec.Result{Stdout: " M home/.zshrc\n"}
-	h.fake.Scripts["git -C "+h.root+" diff --numstat HEAD -- Brewfile"] = exec.Result{Stdout: ""}
-	h.fake.Scripts["git -C "+h.root+" remote"] = exec.Result{Stdout: "origin\n"}
+	h.fake.Scripts["git -C "+exec.Quote(h.root)+" status --porcelain"] = exec.Result{Stdout: " M home/.zshrc\n"}
+	h.fake.Scripts["git -C "+exec.Quote(h.root)+" diff --numstat HEAD -- Brewfile"] = exec.Result{Stdout: ""}
+	h.fake.Scripts["git -C "+exec.Quote(h.root)+" remote"] = exec.Result{Stdout: "origin\n"}
 	s := h.app.Commit("", true, &bytes.Buffer{})
 	if s.Failed() || len(s) != 2 || s[0].Detail != "dot: update .zshrc" || s[1].Detail != "pushed" {
 		t.Fatalf("commit = %+v", s)
@@ -207,5 +207,18 @@ func TestUpdateRunsBrewThenSteps(t *testing.T) {
 	}
 	if !s.Failed() || s[2].Status != result.Ok {
 		t.Fatalf("a failing brew upgrade must not stop step updates: %+v", s)
+	}
+}
+
+func TestExportDiffHonoursBrewIgnore(t *testing.T) {
+	h := newHarness(t, "brew \"jq\"\n")
+	h.app.Manifest.Brew.Ignore = []string{"go tcurl/cmd/tcurl"}
+	h.dump(t, "brew \"jq\"\ngo \"tcurl/cmd/tcurl\"\nnpm \"yarn\"\n")
+	p, err := h.app.ExportDiff()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(p.Diff.Added) != 1 || p.Diff.Added[0].Name != "yarn" {
+		t.Fatalf("ignored entry must not be offered: %+v", p.Diff.Added)
 	}
 }

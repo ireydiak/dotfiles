@@ -56,3 +56,16 @@ func TestStartDryRunAndFailure(t *testing.T) {
 		t.Fatalf("failure = %+v", s[0])
 	}
 }
+
+func TestStatusReportsRunningFromLaunchctlOutput(t *testing.T) {
+	f := exec.NewFake()
+	f.Scripts[Command("501", "com.koekeishiya.yabai")] = exec.Result{Stdout: "\tstate = running\n\tpid = 5138\n"}
+	f.Scripts[Command("501", "com.jackielii.skhd")] = exec.Result{Stdout: "\tstate = spawn scheduled\n\truns = 42\n"}
+	items := Status(context.Background(), f, list, "501")
+	if !items[0].Loaded || !items[0].Running {
+		t.Fatalf("yabai = %+v, want loaded and running", items[0])
+	}
+	if !items[1].Loaded || items[1].Running {
+		t.Fatalf("skhd = %+v, want loaded but not running", items[1])
+	}
+}

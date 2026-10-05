@@ -98,3 +98,13 @@ func TestTaps(t *testing.T) {
 		t.Fatalf("Taps = %v", got)
 	}
 }
+
+func TestExclude(t *testing.T) {
+	got := Exclude([]Entry{e("brew", "jq"), e("go", "tcurl/cmd/tcurl"), e("npm", "yarn")}, []string{"go tcurl/cmd/tcurl"})
+	if len(got) != 2 || got[1].Name != "yarn" {
+		t.Fatalf("Exclude = %+v", got)
+	}
+	if n := len(Exclude(nil, []string{"x y"})); n != 0 {
+		t.Fatalf("Exclude(nil) = %d", n)
+	}
+}

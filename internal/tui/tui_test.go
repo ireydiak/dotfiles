@@ -54,8 +54,8 @@ func TestQuitKey(t *testing.T) {
 }
 
 func TestActionKeysSetRunningAndIgnoreOthersWhileRunning(t *testing.T) {
-	m, _ := testModel(t)
 	for _, k := range []string{"i", "l", "u", "c"} {
+		m, _ := testModel(t)
 		next, cmd := m.Update(key(k))
 		nm := next.(Model)
 		if !nm.running || cmd == nil {
@@ -126,5 +126,18 @@ func TestViewShowsSections(t *testing.T) {
 		if !strings.Contains(v, want) {
 			t.Fatalf("view missing %q:\n%s", want, v)
 		}
+	}
+}
+
+func TestQuitIgnoredWhileRunning(t *testing.T) {
+	m, _ := testModel(t)
+	next, _ := m.Update(key("l"))
+	nm := next.(Model)
+	after, cmd := nm.Update(key("q"))
+	if cmd != nil || !after.(Model).running {
+		t.Fatal("q must be ignored while an action runs; ctrl+c remains the escape hatch")
+	}
+	if _, cmd := nm.Update(tea.KeyMsg{Type: tea.KeyCtrlC}); cmd == nil {
+		t.Fatal("ctrl+c must still quit while running")
 	}
 }

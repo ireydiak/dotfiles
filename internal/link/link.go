@@ -27,12 +27,15 @@ func (s State) String() string {
 	return [...]string{"ok", "missing", "wrong-target", "conflict", "broken-manifest"}[s]
 }
 
+// MarshalText renders the state by name in JSON.
+func (s State) MarshalText() ([]byte, error) { return []byte(s.String()), nil }
+
 type Item struct {
-	Key    string
-	Src    string
-	Dst    string
-	State  State
-	Detail string
+	Key    string `json:"key"`
+	Src    string `json:"src"`
+	Dst    string `json:"dst"`
+	State  State  `json:"state"`
+	Detail string `json:"detail,omitempty"`
 }
 
 type Action struct {

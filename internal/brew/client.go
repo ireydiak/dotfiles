@@ -50,7 +50,7 @@ func (c Client) DumpPath() string { return filepath.Join(c.TempDir, "Brewfile.du
 func (c Client) Dump(ctx context.Context) ([]Entry, error) {
 	path := c.DumpPath()
 	defer os.Remove(path)
-	if _, err := c.run(ctx, "brew bundle dump --force --file="+path, nil); err != nil {
+	if _, err := c.run(ctx, "brew bundle dump --force --file="+exec.Quote(path), nil); err != nil {
 		return nil, err
 	}
 	f, err := os.Open(path)
@@ -98,7 +98,7 @@ func (c Client) Trust(ctx context.Context, tap string, out io.Writer) error {
 }
 
 func (c Client) Install(ctx context.Context, out io.Writer) error {
-	_, err := c.run(ctx, "brew bundle install --no-upgrade --file="+c.File, out)
+	_, err := c.run(ctx, "brew bundle install --no-upgrade --file="+exec.Quote(c.File), out)
 	return err
 }
 

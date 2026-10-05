@@ -37,7 +37,7 @@ func TestCollectWithWorkingBrew(t *testing.T) {
 	d := deps(t, f)
 	os.WriteFile(d.Brew.File, []byte("brew \"jq\"\nbrew \"gone\"\n"), 0o644)
 	os.WriteFile(d.Brew.DumpPath(), []byte("brew \"jq\"\nbrew \"new\"\n"), 0o644)
-	f.Scripts["git -C "+d.RepoRoot+" status --porcelain"] = exec.Result{Stdout: " M home/.zshrc\n"}
+	f.Scripts["git -C "+exec.Quote(d.RepoRoot)+" status --porcelain"] = exec.Result{Stdout: " M home/.zshrc\n"}
 	r := Collect(d)
 	if r.Packages.Err != "" || len(r.Packages.Missing) != 1 || r.Packages.Missing[0].Name != "gone" || len(r.Packages.Unrecorded) != 1 {
 		t.Fatalf("packages = %+v", r.Packages)
@@ -56,7 +56,7 @@ func TestCollectWithWorkingBrew(t *testing.T) {
 func TestCollectSurvivesBrewFailure(t *testing.T) {
 	f := exec.NewFake()
 	d := deps(t, f)
-	f.Scripts["brew bundle dump --force --file="+d.Brew.DumpPath()] = exec.Result{ExitCode: 127, Stderr: "zsh: command not found: brew\n"}
+	f.Scripts["brew bundle dump --force --file="+exec.Quote(d.Brew.DumpPath())] = exec.Result{ExitCode: 127, Stderr: "zsh: command not found: brew\n"}
 	r := Collect(d)
 	if !strings.Contains(r.Packages.Err, "command not found") {
 		t.Fatalf("Packages.Err = %q", r.Packages.Err)
@@ -91,5 +91,64 @@ func TestPrintAndJSON(t *testing.T) {
 		if _, ok := m[k]; !ok {
 			t.Fatalf("JSON missing key %q", k)
 		}
+	}
+}
+
+func TestJSONIsConsumable(t *testing.T) {
+	f := exec.NewFake()
+	d := deps(t, f)
+	f.Scripts["launchctl print gui/501/com.koekeishiya.yabai"] = exec.Result{Stdout: "\tstate = spawn scheduled\n"}
+	os.WriteFile(d.Brew.DumpPath(), []byte(""), 0o644)
+	var buf bytes.Buffer
+	if err := Collect(d).JSON(&buf); err != nil {
+		t.Fatal(err)
+	}
+	var r struct {
+		Packages struct {
+			Missing []json.RawMessage `json:"missing"`
+		} `json:"packages"`
+		Links    []map[string]any `json:"links"`
+		Services []map[string]any `json:"services"`
+		Manual   []map[string]any `json:"manual"`
+		Repo     struct {
+			Changes []string `json:"changes"`
+		} `json:"repo"`
+	}
+	if err := json.Unmarshal(buf.Bytes(), &r); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), `"missing": []`) || !strings.Contains(buf.String(), `"changes": []`) {
+		t.Fatalf("empty lists must serialise as [] not null:\n%s", buf.String())
+	}
+	if r.Links[0]["state"] != "missing" || r.Links[0]["key"] != ".zshrc" {
+		t.Fatalf("link JSON = %v", r.Links[0])
+	}
+	if r.Manual[0]["state"] != "verify" || r.Manual[0]["id"] != "accessibility" {
+		t.Fatalf("manual JSON = %v", r.Manual[0])
+	}
+	if r.Services[0]["loaded"] != true || r.Services[0]["running"] != false {
+		t.Fatalf("service JSON = %v", r.Services[0])
+	}
+}
+
+func TestPrintShowsLoadedButNotRunning(t *testing.T) {
+	f := exec.NewFake()
+	d := deps(t, f)
+	f.Scripts["launchctl print gui/501/com.koekeishiya.yabai"] = exec.Result{Stdout: "\tstate = spawn scheduled\n"}
+	os.WriteFile(d.Brew.DumpPath(), []byte(""), 0o644)
+	var buf bytes.Buffer
+	Collect(d).Print(&buf)
+	if !strings.Contains(buf.String(), "not running") {
+		t.Fatalf("Print should flag a loaded agent that is not running:\n%s", buf.String())
+	}
+}
+
+func TestPackagesHonourBrewIgnore(t *testing.T) {
+	f := exec.NewFake()
+	d := deps(t, f)
+	d.Manifest.Brew.Ignore = []string{"go tcurl/cmd/tcurl"}
+	os.WriteFile(d.Brew.DumpPath(), []byte("go \"tcurl/cmd/tcurl\"\n"), 0o644)
+	if r := Collect(d); len(r.Packages.Unrecorded) != 0 {
+		t.Fatalf("ignored entry reported as unrecorded: %+v", r.Packages.Unrecorded)
 	}
 }

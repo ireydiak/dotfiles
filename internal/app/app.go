@@ -242,6 +242,7 @@ func (a *App) ExportDiff() (*ExportPlan, error) {
 	if err != nil {
 		return nil, err
 	}
+	dump = brew.Exclude(dump, a.Manifest.Brew.Ignore)
 	return &ExportPlan{Committed: committed, Dump: dump, Diff: brew.Compare(committed, dump)}, nil
 }
 

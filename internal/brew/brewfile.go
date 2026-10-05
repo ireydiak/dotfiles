@@ -12,9 +12,9 @@ import (
 // Entry is one Brewfile line. Rest is everything after the closing quote of
 // Name, kept verbatim so options such as `, link: true` survive a round trip.
 type Entry struct {
-	Kind string
-	Name string
-	Rest string
+	Kind string `json:"kind"`
+	Name string `json:"name"`
+	Rest string `json:"rest,omitempty"`
 }
 
 func (e Entry) Key() string  { return e.Kind + " " + e.Name }
@@ -108,4 +108,22 @@ func Taps(entries []Entry) []string {
 		}
 	}
 	return taps
+}
+
+// Exclude drops entries whose Key is listed in keys.
+func Exclude(entries []Entry, keys []string) []Entry {
+	if len(keys) == 0 {
+		return entries
+	}
+	skip := make(map[string]bool, len(keys))
+	for _, k := range keys {
+		skip[k] = true
+	}
+	out := make([]Entry, 0, len(entries))
+	for _, e := range entries {
+		if !skip[e.Key()] {
+			out = append(out, e)
+		}
+	}
+	return out
 }

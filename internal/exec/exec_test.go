@@ -67,3 +67,12 @@ func TestFakeScriptsQueueDefaultAndCalls(t *testing.T) {
 		t.Fatalf("fake did not stream: %q", buf.String())
 	}
 }
+
+func TestQuote(t *testing.T) {
+	if got := Quote("/a b/c"); got != "'/a b/c'" {
+		t.Fatalf("Quote(space) = %q", got)
+	}
+	if got := Quote("it's"); got != `'it'\''s'` {
+		t.Fatalf("Quote(apostrophe) = %q", got)
+	}
+}

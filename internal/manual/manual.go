@@ -20,10 +20,13 @@ func (s State) String() string {
 	return [...]string{"done", "pending", "verify"}[s]
 }
 
+// MarshalText renders the state by name in JSON.
+func (s State) MarshalText() ([]byte, error) { return []byte(s.String()), nil }
+
 type Item struct {
-	ID    string
-	State State
-	How   string
+	ID    string `json:"id"`
+	State State  `json:"state"`
+	How   string `json:"how"`
 }
 
 // Status runs each item's check when it has one.

@@ -4,6 +4,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -49,7 +50,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, newApp newApp
 	}
 	switch cmd {
 	case "", "status", "install", "link", "export", "update", "commit":
-	case "help", "-h", "--help":
+	case "help":
 		fmt.Fprint(stdout, usage)
 		return 0
 	default:
@@ -59,7 +60,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, newApp newApp
 
 	fs := flag.NewFlagSet("dot", flag.ContinueOnError)
 	fs.SetOutput(stderr)
-	fs.Usage = func() { fmt.Fprint(stderr, usage) }
+	fs.Usage = func() {} // usage is printed once, below, on the right stream
 	repoFlag := fs.String("repo", "", "")
 	dryRun := fs.Bool("dry-run", false, "")
 	yes := fs.Bool("yes", false, "")
@@ -67,6 +68,15 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, newApp newApp
 	msg := fs.String("m", "", "")
 	noPush := fs.Bool("no-push", false, "")
 	if err := fs.Parse(args); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			fmt.Fprint(stdout, usage)
+			return 0
+		}
+		fmt.Fprint(stderr, "\n"+usage)
+		return 2
+	}
+	if fs.NArg() > 0 {
+		fmt.Fprintf(stderr, "unexpected argument %q (flags follow the command)\n\n%s", fs.Arg(0), usage)
 		return 2
 	}
 
