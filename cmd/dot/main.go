@@ -13,6 +13,7 @@ import (
 	"github.com/ireydiak/dotfiles/internal/app"
 	"github.com/ireydiak/dotfiles/internal/manual"
 	"github.com/ireydiak/dotfiles/internal/result"
+	"github.com/ireydiak/dotfiles/internal/tui"
 )
 
 const usage = `usage: dot <command> [flags]
@@ -79,7 +80,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, newApp newApp
 
 	switch cmd {
 	case "":
-		if err := runTUI(a); err != nil {
+		if err := tui.Run(a); err != nil {
 			fmt.Fprintln(stderr, "error:", err)
 			return 1
 		}
