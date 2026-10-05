@@ -1,0 +1,6 @@
+.claude/
+.superpowers/
+.DS_Store
+*.dot-tmp
+/dot
+home/.config/sketchybar/helper/helper
