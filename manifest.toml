@@ -27,6 +27,11 @@ check = "test -s ~/.nvm/nvm.sh"
 run   = "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | PROFILE=/dev/null bash"
 
 [[steps]]
+id    = "skhd"
+check = "command -v skhd"
+run   = "brew install --cask jackielii/tap/skhd-zig"
+
+[[steps]]
 id    = "sketchybar-helper"
 check = "test -x ~/.config/sketchybar/helper/helper"
 run   = "make -C ~/.config/sketchybar/helper"
