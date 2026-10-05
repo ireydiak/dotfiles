@@ -1,0 +1,19 @@
+[alias]
+	ql = log --graph --oneline
+[user]
+	name = Jean-Charles Verdier
+	email = jean-charles.verdier@flare.io
+	signinkey = 362ABEE247766A56
+	signingkey = 362ABEE247766A56
+[push]
+	autoSetupRemote = true
+[fetch]
+	prune = true
+[core]
+	editor = vim
+	autocrlf = input
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
