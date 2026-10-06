@@ -1,0 +1,89 @@
+# What dot manages. Paths may start with ~/ ; nothing else is expanded.
+
+[links]
+".zshrc"                        = "~/.zshrc"
+".zprofile"                     = "~/.zprofile"
+".gitconfig"                    = "~/.gitconfig"
+".config/git"                   = "~/.config/git"
+".config/tmux"                  = "~/.config/tmux"
+".config/nvim"                  = "~/.config/nvim"
+".config/skhd"                  = "~/.config/skhd"
+".config/yabai"                 = "~/.config/yabai"
+".config/sketchybar"            = "~/.config/sketchybar"
+"Library/Application Support/com.mitchellh.ghostty/config" = "~/Library/Application Support/com.mitchellh.ghostty/config"
+"Library/Application Support/lazygit/config.yml"           = "~/Library/Application Support/lazygit/config.yml"
+
+# Packages brew bundle dump lists on this machine that no other machine can
+# install (local-only builds). "<kind> <name>" as in the Brewfile. Hidden from
+# status and export.
+[brew]
+ignore = ["go tcurl/cmd/tcurl"]
+
+# Non-brew installs. Run in order; `run` executes only when `check` fails.
+# `update` is optional and used by `dot update`.
+[[steps]]
+id     = "oh-my-zsh"
+check  = "test -d ~/.oh-my-zsh"
+run    = "sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\" '' --unattended --keep-zshrc"
+update = "ZSH=~/.oh-my-zsh zsh ~/.oh-my-zsh/tools/upgrade.sh"
+
+[[steps]]
+id    = "nvm"
+check = "test -s ~/.nvm/nvm.sh"
+run   = "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | PROFILE=/dev/null bash"
+
+[[steps]]
+id    = "skhd"
+check = "command -v skhd"
+run   = "brew install --cask jackielii/tap/skhd-zig"
+
+[[steps]]
+id    = "sketchybar-helper"
+check = "test -x ~/.config/sketchybar/helper/helper"
+run   = "make -C ~/.config/sketchybar/helper"
+
+[[steps]]
+id     = "nvim-plugins"
+check  = "test -d ~/.local/share/nvim/lazy/lazy.nvim"
+run    = "nvim --headless '+Lazy! restore' +qa"
+update = "nvim --headless '+Lazy! sync' +qa"
+
+# launchd agents. Loaded when `launchctl print gui/<uid>/<label>` exits 0.
+[[services]]
+id    = "yabai"
+label = "com.koekeishiya.yabai"
+start = "yabai --start-service"
+
+[[services]]
+id    = "skhd"
+label = "com.jackielii.skhd"
+start = "skhd --install-service && skhd --start-service"
+
+[[services]]
+id    = "sketchybar"
+label = "homebrew.mxcl.sketchybar"
+start = "brew services start sketchybar"
+
+# Things only a person can do. `check` is optional.
+[[manual]]
+id    = "xcode-clt"
+check = "xcode-select -p"
+how   = "xcode-select --install"
+
+[[manual]]
+id    = "sip-for-yabai"
+check = "csrutil status | grep -q 'Filesystem Protections: disabled'"
+how   = "Boot to Recovery, open Terminal, run: csrutil enable --without fs --without debug --without nvram"
+
+[[manual]]
+id    = "yabai-sudoers"
+check = "sudo -n -l $(which yabai) --load-sa"
+how   = "echo \"$(whoami) ALL=(root) NOPASSWD: sha256:$(shasum -a 256 $(which yabai) | cut -d' ' -f1) $(which yabai) --load-sa\" | sudo tee /private/etc/sudoers.d/yabai"
+
+[[manual]]
+id  = "accessibility"
+how = "System Settings > Privacy & Security > Accessibility: enable yabai and skhd"
+
+[[manual]]
+id  = "ssh-and-gpg"
+how = "Restore SSH and GPG keys, then: git -C ~/.dotfiles remote set-url origin git@github.com:ireydiak/dotfiles.git"

@@ -1,0 +1,8 @@
+.claude/
+.superpowers/
+.DS_Store
+*.dot-tmp
+/dot
+home/.config/sketchybar/helper/helper
+home/.config/nvim/local-plugins/
+home/.config/nvim/lua/plugins/local-*.lua

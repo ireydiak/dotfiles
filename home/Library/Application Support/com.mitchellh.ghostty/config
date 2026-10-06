@@ -1,0 +1,4 @@
+# Ghostty configuration. Only options that differ from the defaults are set here.
+# Docs: https://ghostty.org/docs/config
+
+theme = Black Metal (Immortal)

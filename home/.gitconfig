@@ -1,0 +1,21 @@
+[alias]
+	ql = log --graph --oneline
+[user]
+	name = Jean-Charles Verdier
+	email = verdierr@msn.com
+	signingkey = 362ABEE247766A56
+[push]
+	autoSetupRemote = true
+[fetch]
+	prune = true
+[core]
+	editor = vim
+	autocrlf = input
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+# Machine-local overrides such as a work identity. Not tracked.
+[include]
+	path = ~/.gitconfig.local
