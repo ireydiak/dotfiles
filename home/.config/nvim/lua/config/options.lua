@@ -110,3 +110,9 @@ vim.opt.undofile = false -- Optional, but helps if CPU is a concern
 -- lsp
 vim.g.lazyvim_python_lsp = "ty"
 
+
+-- Moved here from init.lua so init.lua stays the untouched LazyVim starter file.
+vim.o.fixeol = true
+
+-- Gleam LSP (server definition ships with nvim-lspconfig)
+vim.lsp.enable("gleam")

@@ -6,7 +6,10 @@
 ".gitconfig"                    = "~/.gitconfig"
 ".config/git"                   = "~/.config/git"
 ".config/tmux"                  = "~/.config/tmux"
-".config/nvim"                  = "~/.config/nvim"
+".config/nvim/lua/config"      = "~/.config/nvim/lua/config"
+".config/nvim/lua/plugins"     = "~/.config/nvim/lua/plugins"
+".config/nvim/snippets"        = "~/.config/nvim/snippets"
+".config/nvim/lazyvim.json"    = "~/.config/nvim/lazyvim.json"
 ".config/skhd"                  = "~/.config/skhd"
 ".config/yabai"                 = "~/.config/yabai"
 ".config/sketchybar"            = "~/.config/sketchybar"
@@ -42,10 +45,16 @@ id    = "sketchybar-helper"
 check = "test -x ~/.config/sketchybar/helper/helper"
 run   = "make -C ~/.config/sketchybar/helper"
 
+# Latest LazyVim starter, merged without overwriting the linked overlay above.
+[[steps]]
+id    = "lazyvim-starter"
+check = "test -f ~/.config/nvim/init.lua"
+run   = 't=$(mktemp -d) && git clone -q --depth 1 https://github.com/LazyVim/starter "$t" && rm -rf "$t/.git" "$t/lua/config" "$t/lua/plugins" && mkdir -p ~/.config/nvim && cp -Rn "$t/." ~/.config/nvim/ && rm -rf "$t"'
+
 [[steps]]
 id     = "nvim-plugins"
 check  = "test -d ~/.local/share/nvim/lazy/lazy.nvim"
-run    = "nvim --headless '+Lazy! restore' +qa"
+run    = "nvim --headless '+Lazy! sync' +qa"
 update = "nvim --headless '+Lazy! sync' +qa"
 
 # launchd agents. Loaded when `launchctl print gui/<uid>/<label>` exits 0.

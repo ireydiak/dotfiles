@@ -42,7 +42,15 @@ Things that belong to one machine or one employer stay out of the repo:
 
 - `~/.zshrc.local`: credentials and work aliases, sourced by the tracked `.zshrc`
 - `~/.gitconfig.local`: included by the tracked `.gitconfig`, for example an `includeIf` that sets a work email under a work directory
-- `home/.config/nvim/local-plugins/` and `lua/plugins/local-*.lua`: nvim plugins that stay on this machine; both are gitignored
+- `~/.config/nvim/local-plugins/` plus a gitignored `lua/plugins/local-*.lua` spec: nvim plugins that stay on this machine
+
+## Neovim
+
+`~/.config/nvim` is the latest LazyVim starter, fetched by an install step, with
+the repo's `lua/config`, `lua/plugins`, `snippets` and `lazyvim.json` symlinked
+over it. Nothing pins plugin versions: `lazy-lock.json` is machine-local and
+`dot update` runs `Lazy! sync`, so LazyVim and every plugin track upstream.
+Breaking changes upstream are accepted as the price of staying current.
 
 ## Adding a config
 
