@@ -40,6 +40,12 @@ id    = "skhd"
 check = "command -v skhd"
 run   = "brew install --cask jackielii/tap/skhd-zig"
 
+# Auto-hide the macOS menu bar so sketchybar replaces it (yabai reclaims the space).
+[[steps]]
+id    = "menubar-autohide"
+check = "defaults read NSGlobalDomain _HIHideMenuBar 2>/dev/null | grep -q 1"
+run   = "defaults write NSGlobalDomain _HIHideMenuBar -bool true && killall SystemUIServer"
+
 [[steps]]
 id    = "sketchybar-helper"
 check = "test -x ~/.config/sketchybar/helper/helper"

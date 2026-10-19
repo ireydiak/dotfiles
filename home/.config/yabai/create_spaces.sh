@@ -14,9 +14,10 @@ function setup_space {
     yabai -m space "$idx" --label "$name"
 }
 
-setup_space 1 code
+setup_space 1 term
 setup_space 2 web
-setup_space 3 utilities
-setup_space 4 slack
+setup_space 3 slack
+setup_space 4 music
+setup_space 5 scratch
 
 sketchybar --trigger space_change --trigger windows_on_spaces
