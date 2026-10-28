@@ -2,16 +2,18 @@ tap "anomalyco/tap", trusted: true
 tap "asmvik/formulae", "https://github.com/asmvik/homebrew-formulae.git", trusted: true
 tap "derailed/k9s", trusted: true
 tap "felixkratz/formulae", "https://github.com/FelixKratz/homebrew-formulae", trusted: true
+tap "floci-io/floci", trusted: true
 tap "hashicorp/tap", trusted: true
 tap "jackielii/tap", trusted: true
+tap "keidarcy/tap", trusted: true
 tap "tinygo-org/tools", trusted: true
 brew "ant"
-brew "openssl@3", link: true
-brew "python@3.13"
+brew "aws-vault"
 brew "awscli"
-brew "azure-cli"
 brew "bash"
 brew "buf"
+brew "openssl@3", link: true
+brew "python@3.13"
 brew "cassandra"
 brew "cmake"
 brew "colima"
@@ -55,6 +57,7 @@ brew "openjdk@11"
 brew "opentofu"
 brew "pgcli"
 brew "pipx"
+brew "pnpm"
 brew "podman"
 brew "poetry"
 brew "postgresql@14"
@@ -69,7 +72,6 @@ brew "shellcheck"
 brew "stern"
 brew "stylua"
 brew "tccutil"
-brew "tflint"
 brew "tmux"
 brew "uv"
 brew "watch"
@@ -78,38 +80,44 @@ brew "wireshark"
 brew "yq"
 brew "zig"
 brew "zoxide"
-brew "anomalyco/tap/opencode"
-brew "asmvik/formulae/yabai"
-brew "derailed/k9s/k9s"
-brew "felixkratz/formulae/sketchybar"
-brew "hashicorp/tap/terraform"
-brew "tinygo-org/tools/tinygo"
-brew "tuicr"
+brew "anomalyco/tap/opencode", trusted: true
+brew "asmvik/formulae/yabai", trusted: true
+brew "derailed/k9s/k9s", trusted: true
+brew "felixkratz/formulae/sketchybar", trusted: true
+brew "floci-io/floci/floci", trusted: true
+brew "hashicorp/tap/terraform", trusted: true
+brew "keidarcy/tap/e1s", trusted: true
+brew "tinygo-org/tools/tinygo", trusted: true
 cask "bitwarden"
 cask "bruno"
 cask "dotnet-sdk"
 cask "font-hack-nerd-font"
+cask "font-jetbrains-mono-nerd-font"
+cask "font-sketchybar-app-font"
 cask "ghostty"
 cask "google-chrome"
 cask "headlamp"
 cask "jetbrains-toolbox"
 cask "meld"
 cask "orbstack"
-cask "powershell"
+cask "session-manager-plugin"
 cask "sf-symbols"
+cask "jackielii/tap/skhd-zig", trusted: true
 cask "slack"
 cask "spotify"
 go "github.com/spf13/cobra-cli"
 go "github.com/go-delve/delve/cmd/dlv"
 go "mvdan.cc/gofumpt"
-go "github.com/golangci/golangci-lint/cmd/golangci-lint"
 go "golang.org/x/tools/gopls"
 go "gorm.io/cli/gorm"
 go "sigs.k8s.io/kind"
-go "github.com/playwright-community/playwright-go/cmd/playwright"
 go "google.golang.org/protobuf/cmd/protoc-gen-go"
 go "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
 go "honnef.co/go/tools/cmd/staticcheck"
 npm "yarn"
-cask "font-jetbrains-mono-nerd-font"
-cask "font-sketchybar-app-font"
+brew "azure-cli"
+brew "tflint"
+brew "tuicr"
+cask "powershell"
+go "github.com/golangci/golangci-lint/cmd/golangci-lint"
+go "github.com/playwright-community/playwright-go/cmd/playwright"
