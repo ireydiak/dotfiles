@@ -164,19 +164,10 @@ autoload -U add-zsh-hook
 # Run once on shell startup
 # auto_activate_venv
 
-# The following lines have been added by Docker Desktop to enable Docker CLI completions.
-fpath=($HOME/.docker/completions $fpath)
-autoload -Uz compinit
-compinit
-# End of Docker CLI completions
-
 # Misc
 export CLAUDE_CODE_DISABLE_MOUSE_CLICKS=1
 
 alias python312="/opt/homebrew/bin/python3.12"
-
-# Utilities
-alias cleanmypy="find . -type d -name \".mypy_cache\" -exec rm -rf {} +"
 
 # Machine-local settings and secrets. Not tracked.
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local

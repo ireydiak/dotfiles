@@ -1,3 +1,7 @@
+# The following lines were added by Docker Desktop to add commands to your PATH.
+export PATH="$PATH:/Users/jcverdier/.docker/bin"
+# End of Docker Desktop section.
+
 eval "$(/opt/homebrew/bin/brew shellenv)"
 alias python='python3'
 export NVM_DIR="$HOME/.nvm"

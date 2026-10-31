@@ -15,6 +15,7 @@
 ".config/sketchybar"            = "~/.config/sketchybar"
 "Library/Application Support/com.mitchellh.ghostty/config" = "~/Library/Application Support/com.mitchellh.ghostty/config"
 "Library/Application Support/lazygit/config.yml"           = "~/Library/Application Support/lazygit/config.yml"
+".claude/settings.json"          = "~/.claude/settings.json"
 
 # Packages brew bundle dump lists on this machine that no other machine can
 # install (local-only builds). "<kind> <name>" as in the Brewfile. Hidden from
@@ -39,6 +40,12 @@ run   = "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.s
 id    = "skhd"
 check = "command -v skhd"
 run   = "brew install --cask jackielii/tap/skhd-zig"
+
+# Auto-hide the macOS menu bar so sketchybar replaces it (yabai reclaims the space).
+[[steps]]
+id    = "menubar-autohide"
+check = "defaults read NSGlobalDomain _HIHideMenuBar 2>/dev/null | grep -q 1"
+run   = "defaults write NSGlobalDomain _HIHideMenuBar -bool true && killall SystemUIServer"
 
 [[steps]]
 id    = "sketchybar-helper"
